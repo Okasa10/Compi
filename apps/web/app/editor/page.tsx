@@ -1,78 +1,128 @@
 'use client'
 
 import dynamic from 'next/dynamic'
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
+import {
+  Panel,
+  Group,
+  Separator,
+} from 'react-resizable-panels'
 import type { Language } from '@dsa-compiler/types'
+import Navbar from '@/components/navbar'
+import Toolbar from '@/components/toolbar'
+import OutputPane from '@/components/output-pane'
+import StdinPane from '@/components/stdin-pane'
 
-// Monaco must be loaded client-side only
 const MonacoEditor = dynamic(() => import('@monaco-editor/react'), { ssr: false })
 
-const LANGUAGES: Language[] = ['python', 'cpp', 'java', 'javascript']
+const DEFAULT_CODE: Record<Language, string> = {
+  python: '# Write your solution here\n\ndef solve():\n    pass\n\nsolve()\n',
+  cpp: '#include <bits/stdc++.h>\nusing namespace std;\n\nint main() {\n    // Your code here\n    return 0;\n}\n',
+  java: 'public class Main {\n    public static void main(String[] args) {\n        // Your code here\n    }\n}\n',
+  javascript: '// Write your solution here\n\nfunction solve() {\n\n}\n\nsolve();\n',
+}
 
 export default function EditorPage() {
-  const [code, setCode] = useState('# Write your code here\n')
   const [language, setLanguage] = useState<Language>('python')
+  const [code, setCode] = useState(DEFAULT_CODE['python'])
   const [stdin, setStdin] = useState('')
-  const [output, setOutput] = useState('')
+  const [stdout, setStdout] = useState('')
+  const [stderr, setStderr] = useState('')
+  const [executionTime, setExecutionTime] = useState<number | undefined>()
+  const [isRunning, setIsRunning] = useState(false)
+
+  const handleLanguageChange = useCallback((lang: Language) => {
+    setLanguage(lang)
+    setCode(DEFAULT_CODE[lang])
+    setStdout('')
+    setStderr('')
+  }, [])
+
+  const handleReset = useCallback(() => {
+    setCode(DEFAULT_CODE[language])
+    setStdout('')
+    setStderr('')
+    setStdin('')
+  }, [language])
+
+  // Stub — will be replaced with real WebSocket call on Day 6
+  const handleRun = useCallback(async () => {
+    setIsRunning(true)
+    setStdout('')
+    setStderr('')
+    setExecutionTime(undefined)
+
+    await new Promise((r) => setTimeout(r, 1200)) // fake delay
+
+    setStdout('Hello, World!\n// Real execution coming Day 6 🚀')
+    setExecutionTime(42)
+    setIsRunning(false)
+  }, [])
 
   return (
-    <div className="flex flex-col h-screen bg-zinc-950 text-white">
-      {/* Toolbar */}
-      <div className="flex items-center gap-3 px-4 py-2 bg-zinc-900 border-b border-zinc-800">
-        <span className="font-mono font-bold text-sm text-emerald-400">DSA Compiler</span>
-        <select
-          value={language}
-          onChange={(e) => setLanguage(e.target.value as Language)}
-          className="bg-zinc-800 border border-zinc-700 text-sm rounded px-2 py-1 text-white"
-        >
-          {LANGUAGES.map(l => <option key={l} value={l}>{l}</option>)}
-        </select>
-        <button
-          onClick={() => setOutput('// Run not wired yet — coming Day 6')}
-          className="ml-auto bg-emerald-600 hover:bg-emerald-500 px-4 py-1 rounded text-sm font-medium"
-        >
-          ▶ Run
-        </button>
-      </div>
+    <div className="flex flex-col h-screen bg-zinc-950">
+      <Navbar />
 
-      {/* Main split */}
-      <div className="flex flex-1 overflow-hidden">
-        {/* Editor pane */}
-        <div className="flex-1 border-r border-zinc-800">
-          <MonacoEditor
-            height="100%"
-            language={language === 'cpp' ? 'cpp' : language}
-            value={code}
-            onChange={(v) => setCode(v ?? '')}
-            theme="vs-dark"
-            options={{
-              fontSize: 14,
-              fontFamily: 'JetBrains Mono, Fira Code, monospace',
-              minimap: { enabled: false },
-              scrollBeyondLastLine: false,
-              tabSize: 2,
-            }}
-          />
-        </div>
+      <Toolbar
+        language={language}
+        onLanguageChange={handleLanguageChange}
+        onRun={handleRun}
+        onReset={handleReset}
+        code={code}
+        isRunning={isRunning}
+      />
 
-        {/* Input/Output pane */}
-        <div className="w-96 flex flex-col">
-          <div className="flex-1 flex flex-col border-b border-zinc-800">
-            <div className="px-3 py-1 text-xs font-mono text-zinc-500 bg-zinc-900">STDIN</div>
-            <textarea
-              value={stdin}
-              onChange={(e) => setStdin(e.target.value)}
-              className="flex-1 bg-zinc-950 text-sm font-mono p-3 resize-none outline-none text-zinc-300"
-              placeholder="Input for your program..."
+      {/* Resizable main area */}
+      <div className="flex-1 overflow-hidden">
+        <Group orientation="horizontal" className="h-full">
+          {/* Editor panel */}
+          <Panel defaultSize={65} minSize={30}>
+            <MonacoEditor
+              height="100%"
+              language={language === 'cpp' ? 'cpp' : language}
+              value={code}
+              onChange={(v) => setCode(v ?? '')}
+              theme="vs-dark"
+              options={{
+                fontSize: 14,
+                fontFamily: '"JetBrains Mono", "Fira Code", monospace',
+                fontLigatures: true,
+                minimap: { enabled: false },
+                scrollBeyondLastLine: false,
+                tabSize: 2,
+                padding: { top: 12 },
+                smoothScrolling: true,
+                cursorBlinking: 'smooth',
+                renderLineHighlight: 'gutter',
+              }}
             />
-          </div>
-          <div className="flex-1 flex flex-col">
-            <div className="px-3 py-1 text-xs font-mono text-zinc-500 bg-zinc-900">OUTPUT</div>
-            <pre className="flex-1 bg-zinc-950 text-sm font-mono p-3 overflow-auto text-emerald-300">
-              {output || 'Output will appear here...'}
-            </pre>
-          </div>
-        </div>
+          </Panel>
+
+          {/* Drag handle */}
+          <Separator className="w-1 bg-zinc-800 hover:bg-emerald-500 
+                                        transition-colors cursor-col-resize" />
+
+          {/* Right panel — stdin + output stacked */}
+          <Panel defaultSize={35} minSize={20}>
+            <Group orientation="vertical" className="h-full">
+              <Panel defaultSize={35} minSize={15}>
+                <StdinPane value={stdin} onChange={setStdin} />
+              </Panel>
+
+              <Separator className="h-1 bg-zinc-800 hover:bg-emerald-500 
+                                            transition-colors cursor-row-resize" />
+
+              <Panel defaultSize={65} minSize={20}>
+                <OutputPane
+                  stdout={stdout}
+                  stderr={stderr}
+                  executionTime={executionTime}
+                  isRunning={isRunning}
+                />
+              </Panel>
+            </Group>
+          </Panel>
+        </Group>
       </div>
     </div>
   )
