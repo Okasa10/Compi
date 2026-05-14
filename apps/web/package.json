@@ -10,8 +10,12 @@
   },
   "dependencies": {
     "@dsa-compiler/types": "^1.0.0",
+    "@fastify/cors": "^11.2.0",
+    "@fastify/helmet": "^13.0.2",
+    "@fastify/websocket": "^11.2.0",
     "@monaco-editor/react": "^4.7.0",
     "clsx": "^2.1.1",
+    "fastify": "^5.8.4",
     "lucide-react": "^1.7.0",
     "monaco-editor": "^0.53.0",
     "next": "16.2.2",
@@ -22,12 +26,11 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
-    "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.2.2",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "tsx": "^4.21.0"
   }
 }
