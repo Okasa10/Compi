@@ -51,8 +51,20 @@ export default function EditorPage() {
     setStdout('')
     setStderr('')
     setExecutionTime(undefined)
-
-    await new Promise((r) => setTimeout(r, 1200)) // fake delay
+    // try {
+      const response = await fetch("http://127.0.0.1:3001/execute", {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code: code, input: stdin, language: language })
+      });    
+      console.log(response);
+      if (!response.ok)
+        throw new Error(`HTTP error! status: ${response.status}`);
+      else console.log(response.json());
+      
+    // } catch (err) {
+    //   console.log(err);
+    // }
 
     setStdout('Hello, World!\n// Real execution coming Day 6 🚀')
     setExecutionTime(42)
