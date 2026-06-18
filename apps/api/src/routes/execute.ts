@@ -1,6 +1,10 @@
-const execute = (request, reply) => {
-    console.log(request.body);
-    reply.send("Code reached backend successfully")
-}
+import { FastifyInstance } from "fastify";
 
-export default execute;
+const executionRoutes = async (app:FastifyInstance, options:Object) => {
+    app.post('/execute' ,  async (request, reply) => {
+        console.log(request.body);
+        reply.send("Hello Backend Here");
+  })
+};
+
+export default executionRoutes;
