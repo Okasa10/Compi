@@ -21,6 +21,7 @@
   },
   "devDependencies": {
     "@types/node": "^20.19.39",
+     "@repo/types": "*",
     "nodemon": "^3.1.14",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3"

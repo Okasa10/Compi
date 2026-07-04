@@ -11,4 +11,4 @@ export interface RunResult {
   stderr: string
   exitCode: number
   executionTime: number
-}
+} 

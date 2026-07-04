@@ -1,5 +1,9 @@
 {
-  "name": "@dsa-compiler/types",
+  "name": "@repo/types",
   "version": "1.0.0",
-  "main": "index.ts"
+  "private": true,
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "types": "./src/index.ts"
 }
