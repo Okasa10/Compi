@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "scripts": {
     "dev": "tsx watch src/index.ts",
+    "worker":"tsx watch src/services/runner.ts",
     "start": "node index.js"
   },
   "dependencies": {

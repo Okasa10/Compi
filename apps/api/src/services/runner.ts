@@ -1,17 +1,102 @@
+import "dotenv/config";
 import { Worker } from "bullmq";
 import { connection } from "../config/bullmq";
-
+import { spawn } from "child_process";
+import path from "path";
 const worker = new Worker(
   "containers",
   async (job) => {
-    console.log("Processing Job:", job.id);
+    const { language, stdin } = job.data;
 
-    return { success: true, id: job.id };
+    let image = "";
+    let dockerArgs: string[] = [];
+
+    switch (language) {
+      case "python":
+        image = "oj-python";
+        dockerArgs = ["python", "Main.py"];
+        break;
+
+      case "cpp":
+        image = "oj-cpp";
+        dockerArgs = ["bash", "-c", "g++ Main.cpp -o main && ./main"];
+        break;
+
+      case "java":
+        image = "oj-java";
+        dockerArgs = ["bash", "-c", "javac Main.java && java Main"];
+        break;
+
+      default:
+        throw new Error("Unsupported language");
+    }
+
+    return await new Promise((resolve) => {
+      const filePath = path.resolve(process.env.CODE_DIR!);
+      console.log(filePath);
+      
+      const docker = spawn(
+        "sudo",
+        [
+          "docker",
+          "run",
+          "--rm",
+          "-i",
+          "-v",
+          `${filePath}:/submission`,
+          "-w",
+          "/submission",
+          image,
+          ...dockerArgs,
+        ],
+        {
+          stdio: ["pipe", "pipe", "pipe"],
+        },
+      );
+
+      let stdout = "";
+      let stderr = "";
+
+      docker.stdout.on("data", (data) => {
+        stdout += data.toString();
+      });
+
+      docker.stderr.on("data", (data) => {
+        stderr += data.toString();
+      });
+
+      docker.on("error", (err) => {
+        resolve({
+          success: false,
+          id: job.id,
+          stdout,
+          stderr,
+          error: err.message,
+        });
+      });
+
+      docker.on("close", (code) => {
+        resolve({
+          success: code === 0,
+          id: job.id,
+          stdout,
+          stderr,
+          error: code === 0 ? null : `Container exited with code ${code}`,
+        });
+      });
+
+      // Pass the user's input to the program
+      if (stdin) {
+        docker.stdin.write(stdin);
+      }
+
+      docker.stdin.end();
+    });
   },
   {
     connection,
     concurrency: 5,
-  }
+  },
 );
 
 worker.on("completed", (job, result) => {
