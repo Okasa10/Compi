@@ -1,5 +1,5 @@
 {
-  "name": "@repo/types",
+  "name": "@dsa-compiler/types",
   "version": "1.0.0",
   "private": true,
   "exports": {

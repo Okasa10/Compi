@@ -10,26 +10,22 @@
   },
   "dependencies": {
     "@dsa-compiler/types": "^1.0.0",
-    "@fastify/cors": "^11.2.0",
-    "@fastify/helmet": "^13.0.2",
-    "@fastify/websocket": "^11.2.0",
     "@monaco-editor/react": "^4.7.0",
     "clsx": "^2.1.1",
-    "fastify": "^5.8.4",
     "lucide-react": "^1.7.0",
     "monaco-editor": "^0.53.0",
-    "next": "16.2.2",
-    "react": "19.2.4",
-    "react-dom": "19.2.4",
+    "next": "14.2.30",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
     "react-resizable-panels": "^4.9.0",
     "zustand": "^5.0.12"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "eslint": "^9",
-    "eslint-config-next": "16.2.2",
+    "@types/react": "^18.3.1",
+    "@types/react-dom": "^18.3.1",
+    "eslint": "^8.57.0",
+    "eslint-config-next": "14.2.30",
     "tailwindcss": "^4",
     "tsx": "^4.21.0"
   }

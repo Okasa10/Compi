@@ -1,75 +1,78 @@
-'use client'
+"use client";
 
-import dynamic from 'next/dynamic'
-import { useState, useCallback } from 'react'
-import {
-  Panel,
-  Group,
-  Separator,
-} from 'react-resizable-panels'
-import type { Language } from '@dsa-compiler/types'
-import Navbar from '@/components/navbar'
-import Toolbar from '@/components/toolbar'
-import OutputPane from '@/components/output-pane'
-import StdinPane from '@/components/stdin-pane'
+import { useState, useCallback } from "react";
+import dynamic from "next/dynamic";
+import { Panel, Group, Separator } from "react-resizable-panels";
+import type { Language } from "@dsa-compiler/types";
+import Navbar from "@/components/navbar";
+import Toolbar from "@/components/toolbar";
+import OutputPane from "@/components/output-pane";
+import StdinPane from "@/components/stdin-pane";
 
-const MonacoEditor = dynamic(() => import('@monaco-editor/react'), { ssr: false })
+const MonacoEditor = dynamic(() => import("@monaco-editor/react"), { ssr: false });
 
 const DEFAULT_CODE: Record<Language, string> = {
-  python: '# Write your solution here\n\ndef solve():\n    pass\n\nsolve()\n',
-  cpp: '#include <bits/stdc++.h>\nusing namespace std;\n\nint main() {\n    // Your code here\n    return 0;\n}\n',
-  java: 'public class Main {\n    public static void main(String[] args) {\n        // Your code here\n    }\n}\n',
-  javascript: '// Write your solution here\n\nfunction solve() {\n\n}\n\nsolve();\n',
-}
+  python: "# Write your solution here\n\ndef solve():\n    pass\n\nsolve()\n",
+  cpp: "#include <bits/stdc++.h>\nusing namespace std;\n\nint main() {\n    // Your code here\n    return 0;\n}\n",
+  java: "public class Main {\n    public static void main(String[] args) {\n        // Your code here\n    }\n}\n",
+  javascript:
+    "// Write your solution here\n\nfunction solve() {\n\n}\n\nsolve();\n",
+};
 
 export default function EditorPage() {
-  const [language, setLanguage] = useState<Language>('python')
-  const [code, setCode] = useState(DEFAULT_CODE['python'])
-  const [stdin, setStdin] = useState('')
-  const [stdout, setStdout] = useState('')
-  const [stderr, setStderr] = useState('')
-  const [executionTime, setExecutionTime] = useState<number | undefined>()
-  const [isRunning, setIsRunning] = useState(false)
+  const [language, setLanguage] = useState<Language>("python");
+  const [code, setCode] = useState(DEFAULT_CODE["python"]);
+  const [stdin, setStdin] = useState("");
+  const [stdout, setStdout] = useState("");
+  const [stderr, setStderr] = useState("");
+  const [executionTime, setExecutionTime] = useState<number | undefined>();
+  const [isRunning, setIsRunning] = useState(false);
 
   const handleLanguageChange = useCallback((lang: Language) => {
-    setLanguage(lang)
-    setCode(DEFAULT_CODE[lang])
-    setStdout('')
-    setStderr('')
-  }, [])
+    setLanguage(lang);
+    setCode(DEFAULT_CODE[lang]);
+    setStdout("");
+    setStderr("");
+  }, []);
 
   const handleReset = useCallback(() => {
-    setCode(DEFAULT_CODE[language])
-    setStdout('')
-    setStderr('')
-    setStdin('')
-  }, [language])
+    setCode(DEFAULT_CODE[language]);
+    setStdout("");
+    setStderr("");
+    setStdin("");
+  }, [language]);
 
-  // Stub — will be replaced with real WebSocket call on Day 6
   const handleRun = useCallback(async () => {
-    setIsRunning(true)
-    setStdout('')
-    setStderr('')
-    setExecutionTime(undefined)
-    // try {
-      const response = await fetch("http://127.0.0.1:3001/execute", {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ code: code, input: stdin, language: language })
-      });    
-      console.log(response);
-      if (!response.ok)
-        throw new Error(`HTTP error! status: ${response.status}`);
-      else console.log(response.json());
-      
-    // } catch (err) {
-    //   console.log(err);
-    // }
+    setIsRunning(true);
+    setStdout("");
+    setStderr("");
+    setExecutionTime(undefined);
 
-    setStdout('Hello, World!\n// Real execution coming Day 6 🚀')
-    setExecutionTime(42)
-    setIsRunning(false)
-  }, [])
+    const startedAt = Date.now();
+
+    try {
+      const response = await fetch("http://127.0.0.1:3002/execute", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code, language, stdin }),
+      });
+
+      const payload = await response.json();
+
+      if (!response.ok || payload.success === false) {
+        throw new Error(payload.error || `HTTP error! status: ${response.status}`);
+      }
+
+      setStdout(payload.stdout || "");
+      setStderr(payload.stderr || "");
+      setExecutionTime(Date.now() - startedAt);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Unknown error";
+      setStderr(message);
+    } finally {
+      setIsRunning(false);
+    }
+  }, [code, language, stdin]);
 
   return (
     <div className="flex flex-col h-screen bg-zinc-950">
@@ -91,9 +94,9 @@ export default function EditorPage() {
           <Panel defaultSize={65} minSize={30}>
             <MonacoEditor
               height="100%"
-              language={language === 'cpp' ? 'cpp' : language}
+              language={language === "cpp" ? "cpp" : language}
               value={code}
-              onChange={(v) => setCode(v ?? '')}
+              onChange={(value) => setCode(value ?? "")}
               theme="vs-dark"
               options={{
                 fontSize: 14,
@@ -104,15 +107,17 @@ export default function EditorPage() {
                 tabSize: 2,
                 padding: { top: 12 },
                 smoothScrolling: true,
-                cursorBlinking: 'smooth',
-                renderLineHighlight: 'gutter',
+                cursorBlinking: "smooth",
+                renderLineHighlight: "gutter",
               }}
             />
           </Panel>
 
           {/* Drag handle */}
-          <Separator className="w-1 bg-zinc-800 hover:bg-emerald-500 
-                                        transition-colors cursor-col-resize" />
+          <Separator
+            className="w-1 bg-zinc-800 hover:bg-emerald-500 
+                                        transition-colors cursor-col-resize"
+          />
 
           {/* Right panel — stdin + output stacked */}
           <Panel defaultSize={35} minSize={20}>
@@ -121,8 +126,10 @@ export default function EditorPage() {
                 <StdinPane value={stdin} onChange={setStdin} />
               </Panel>
 
-              <Separator className="h-1 bg-zinc-800 hover:bg-emerald-500 
-                                            transition-colors cursor-row-resize" />
+              <Separator
+                className="h-1 bg-zinc-800 hover:bg-emerald-500 
+                                            transition-colors cursor-row-resize"
+              />
 
               <Panel defaultSize={65} minSize={20}>
                 <OutputPane
@@ -137,5 +144,5 @@ export default function EditorPage() {
         </Group>
       </div>
     </div>
-  )
+  );
 }

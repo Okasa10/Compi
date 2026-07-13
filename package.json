@@ -7,9 +7,7 @@
   ],
   "scripts": {
     "dev:web": "npm run dev --workspace=apps/web",
-    "dev:api": "npm run dev --workspace=apps/api"
-  },
-  "dependencies": {
-    "react-resizable-panels": "^4.11.1"
+    "dev:api": "npm run dev --workspace=apps/api",
+    "build:web": "npm run build --workspace=apps/web"
   }
 }
