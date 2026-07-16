@@ -1,18 +1,23 @@
-'use client'
+"use client";
 
-import Link from 'next/link'
-import { usePathname } from 'next/navigation'
-import { Code2, BookOpen, Settings } from 'lucide-react'
-import clsx from 'clsx'
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { Code2, BookOpen, Settings, GitBranch, GitFork } from "lucide-react";
+import clsx from "clsx";
 
 const NAV_ITEMS = [
-  { href: '/editor', label: 'Editor', icon: Code2 },
-  { href: '/problems', label: 'Problems', icon: BookOpen },
-  { href: '/settings', label: 'Settings', icon: Settings },
-]
+  { href: "/editor", label: "Editor", icon: Code2 },
+  { href: "/problems", label: "Problems", icon: BookOpen },
+  { href: "/settings", label: "Settings", icon: Settings },
+  {
+    href: "http://localhost:3002/login/github",
+    label: "Github Login",
+    icon: GitFork,
+  },
+];
 
 export default function Navbar() {
-  const pathname = usePathname()
+  const pathname = usePathname();
 
   return (
     <nav className="flex items-center gap-1 px-4 py-2 bg-zinc-900 border-b border-zinc-800 h-12">
@@ -33,10 +38,10 @@ export default function Navbar() {
             key={href}
             href={href}
             className={clsx(
-              'flex items-center gap-1.5 px-3 py-1.5 rounded text-sm font-medium transition-colors',
+              "flex items-center gap-1.5 px-3 py-1.5 rounded text-sm font-medium transition-colors",
               pathname.startsWith(href)
-                ? 'bg-zinc-800 text-white'
-                : 'text-zinc-400 hover:text-white hover:bg-zinc-800/50'
+                ? "bg-zinc-800 text-white"
+                : "text-zinc-400 hover:text-white hover:bg-zinc-800/50",
             )}
           >
             <Icon size={14} />

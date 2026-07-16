@@ -1,6 +1,6 @@
 import { FastifyInstance } from "fastify";
 import { writeFileSync } from "fs";
-import { RunRequest } from "@repo/types";
+import { RunRequest } from "@dsa-compiler/types";
 import { executionQueue } from "../config/bullmq";
 import { QueueEvents } from "bullmq/dist/esm/classes/queue-events";
 
